@@ -33,18 +33,32 @@ class ZNCServer():
 
     def add_user(self, username, password):
         """ Add a user """
-        
-        self.br.follow_link(text="List Users")
+
+        resp = self.br.follow_link(text="Add User")
 
         # Clean HTML
-        resp = self.br.follow_link(url="adduser?clone=userbase")
         resp.set_data(self.br.response().read().replace('datalist', 'select'))
         self.br.set_response(resp)
 
-        # Fill in the form
+        # Create User
         self.br.select_form(nr=0)
         self.br.form['user'] = self.br.form['nick'] = self.br.form['altnick'] = self.br.form['ident'] = self.br.form['realname'] = username
         self.br.form['password'] = self.br.form['password2'] = password
+        self.br.find_control("modargs_webadmin").selected=True
         self.br.submit()
+
+        # Add Network
+        self.br.follow_link(text="List Users")
+        self.br.follow_link(url="edituser?user=" + username)
+        resp = self.br.follow_link(url="addnetwork?user=" + username)
+
+        # Clean HTML
+        resp.set_data(self.br.response().read().replace('datalist', 'select'))
+        self.br.set_response(resp)
+        self.br.select_form(nr=0)
+
+        self.br.form['nick'] = self.br.form['altnick'] = self.br.form['ident'] = self.br.form['realname'] = username
+        self.br.submit()
+
 
 
